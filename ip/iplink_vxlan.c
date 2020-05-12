@@ -318,7 +318,15 @@ static int vxlan_parse_opt(struct link_util *lu, int argc, char **argv,
 			/* we will add LEARNING attribute outside of the loop */
 			addattr8(n, 1024, IFLA_VXLAN_COLLECT_METADATA,
 				 metadata);
-		} else if (!matches(*argv, "noexternal")) {
+		}
+                else if (!matches(*argv, "tunnelinfo")) {
+                            check_duparg(&attrs, IFLA_VXLAN_TUNNEL_INFO,
+                                     *argv, *argv);
+                            /* we will add LEARNING attribute outside of the loop */
+                            addattr8(n, 1024, IFLA_VXLAN_TUNNEL_INFO,
+                                 1);
+                }
+                else if (!matches(*argv, "noexternal")) {
 			check_duparg(&attrs, IFLA_VXLAN_COLLECT_METADATA,
 				     *argv, *argv);
 			metadata = 0;
@@ -524,6 +532,11 @@ static void vxlan_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
 			print_bool(PRINT_FP, NULL, "nolearning ", true);
 	}
 
+        if (tb[IFLA_VXLAN_TUNNEL_INFO] &&
+	    rta_getattr_u8(tb[IFLA_VXLAN_TUNNEL_INFO])) {
+		print_bool(PRINT_ANY, "tunnelinfo", "tunnelinfo ", true);
+	}
+
 	if (tb[IFLA_VXLAN_PROXY] && rta_getattr_u8(tb[IFLA_VXLAN_PROXY]))
 		print_bool(PRINT_ANY, "proxy", "proxy ", true);
 
@@ -640,6 +653,8 @@ static void vxlan_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
 		print_bool(PRINT_ANY, "gbp", "gbp ", true);
 	if (tb[IFLA_VXLAN_GPE])
 		print_bool(PRINT_ANY, "gpe", "gpe ", true);
+
+
 }
 
 static void vxlan_print_help(struct link_util *lu, int argc, char **argv,
